@@ -125,7 +125,7 @@ def get_warning_message():
   for attack in war.attacks:
     if attack.attacker.clan.name == clan_names[0]:
       our_attackers.append(attack.attacker.name)
-  message = 'Our war with ' + war.opponent.name + ' is ending in less than 3 hours...\nWe are currently ' + war.status + ' and the following player have remaining attacks.\n'
+  message = 'Our war with ' + war.opponent.name + ' is ending in less than 4 hours...\nWe are currently ' + war.status + ' and the following player have remaining attacks.\n'
   member_list = []
   for member in war.clan.members:
     member_list.append(member.name)
