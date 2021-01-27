@@ -14,7 +14,7 @@ coc_client = coc.login(
     os.getenv('EMAIL'),
     os.getenv('PASS'),
     key_names="Made with coc.py",
-    client=coc.Client)
+    client=coc.EventsClient)
 
 
 @discord_client.event
@@ -30,7 +30,7 @@ async def on_message(message):
       return
   global war
   if message.content.startswith('$currentwar'):
-      war = await coc_client.get_current_war(clan_tags[0])
+      await updateWarMain()
       if war:
         name = war.opponent.name
         used = 0
@@ -48,7 +48,7 @@ async def on_message(message):
         "The war is in a strange CWL state..."
         )
   if message.content.startswith('$timeleft'):
-        war = await coc_client.get_current_war(clan_tags[0])
+        await updateWarMain()
         if war:
             time_remaining = war.end_time.seconds_until / 60
             minutes = int(time_remaining % 60)
@@ -61,7 +61,7 @@ async def on_message(message):
           "The war is in a strange CWL state..."
           )
   if message.content.startswith('!currentwar'):
-    war = await coc_client.get_current_war(clan_tags[1])
+    await updateWarMini()
     if war:
       name = war.opponent.name
       used = 0
@@ -79,7 +79,7 @@ async def on_message(message):
         "The war is in a strange CWL state..."
         )
   if message.content.startswith('!timeleft'):
-      war = await coc_client.get_current_war(clan_tags[1])
+      await updateWarMini()
       if war:
           time_remaining = war.end_time.seconds_until / 60
           minutes = int(time_remaining % 60)
@@ -98,12 +98,12 @@ async def check_war_time():
   main_channel = discord_client.get_channel(int(os.getenv('CHANNEL')))
   while not discord_client.is_closed():
     if await time_to_send():
-      await main_channel.send(get_warning_message())
+      await main_channel.send(embed=get_warning_message())
     await asyncio.sleep(3600) # Checks every hour
 
 async def time_to_send():
   global war
-  war = await coc_client.get_current_war(clan_tags[0])
+  await updateWarMain()
   if war:
     time_remaining = war.end_time.seconds_until / 60
     hours = int(time_remaining / 60)
@@ -139,9 +139,35 @@ def get_warning_message():
         message += (name + ' - 2 remaining.\n')
       elif attacks_completed == 1:
         message += (name + ' - 1 remaining.\n')
-  return message
+  embed = discord.Embed(title="The war is ending soon...", description=message, color=0x607d8b)
+  embed.set_thumbnail(url='https://cdn.freelogovectors.net/wp-content/uploads/2019/01/clash_of_clans_logo.png')
+  return embed
 
-  
+async def updateWarMain():
+  global war
+  try:
+    war = await coc_client.get_current_war(clan_tags[0])
+  except coc.PrivateWarLog:
+    #CLAN IS NOT IN CWL
+    print("Clan was private log")
+  if not war:
+      war = await coc_client.get_current_war(clan_tags[0], cwl_round=coc.WarRound.current_preparation)
+  if war.league_group and len(war.league_group.rounds) == 7:
+    war = await coc_client.get_current_war(clan_tags[0], cwl_round=coc.WarRound.current_preparation )
+
+async def updateWarMini():
+  global war
+  try:
+    war = await coc_client.get_current_war(clan_tags[1])
+  except coc.PrivateWarLog:
+    #CLAN IS NOT IN CWL
+    print("Clan was private log")
+  if not war:
+      war = await coc_client.get_current_war(clan_tags[1], cwl_round=coc.WarRound.current_preparation)
+  if war.league_group and len(war.league_group.rounds) == 7:
+    war = await coc_client.get_current_war(clan_tags[1], cwl_round=coc.WarRound.current_preparation )
+    
+
 
     
 
