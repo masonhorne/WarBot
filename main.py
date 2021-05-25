@@ -7,8 +7,8 @@ import asyncio
 
 global war
 main_channel = None
-clan_tags = ['#28LGRG92U', '#2YQ2RLCC8']
-clan_names = ['ToValhalla', 'ValhallaRising']
+clan_tags = ['#28LGRG92U', '#2YQ2RLCC8', '#2L2YVRU8V']
+clan_names = ['ToValhalla', 'ValhallaRising', 'Ragnarok']
 discord_client = discord.Client()
 coc_client = coc.login(
     os.getenv('EMAIL'),
@@ -30,68 +30,23 @@ async def on_message(message):
       return
   global war
   if message.content.startswith('$currentwar'):
-      await updateWarMain()
-      if war:
-        name = war.opponent.name
-        used = 0
-        attacks = ''
-        for attack in war.attacks:
-          if attack.attacker.clan.name == clan_names[0]:
-              used += 1
-        if war.is_cwl:
-          attacks = str(used) + '/' + str(war.team_size)
-        else :
-          attacks = str(used) +'/' + str(war.team_size * 2)
-        await message.channel.send('{0}\'s current war is against {1}. We have used {2} attacks and are currently {3}.'.format(clan_names[0], name, attacks, war.status))
-      else :
-        await message.channel.send(
-        "The war is in a strange CWL state..."
-        )
+      await updateWarInfo(0)
+      await sendCurrentWar(0, message)
   if message.content.startswith('$timeleft'):
-        await updateWarMain()
-        if war:
-            time_remaining = war.end_time.seconds_until / 60
-            minutes = int(time_remaining % 60)
-            hours = int(time_remaining / 60)
-            await message.channel.send(
-                "{0} has {1} hours and {2} minutes remaining in war against {3}.".format(
-                    clan_names[0], hours, minutes, war.opponent.name))
-        else:
-          await message.channel.send(
-          "The war is in a strange CWL state..."
-          )
+        await updateWarInfo(0)
+        await sendTimeRemaining(0, message)
   if message.content.startswith('!currentwar'):
-    await updateWarMini()
-    if war:
-      name = war.opponent.name
-      used = 0
-      attacks = ''
-      for attack in war.attacks:
-        if attack.attacker.clan.name == clan_names[1]:
-          used += 1
-        if war.is_cwl:
-          attacks = str(used) + '/' + str(war.team_size)
-        else :
-          attacks = str(used) +'/' + str(war.team_size * 2)
-      await message.channel.send('{0}\'s current war is against {1}. We have used {2} attacks and are currently {3}.'.format(clan_names[1], name, attacks, war.status))
-    else :
-      await message.channel.send(
-        "The war is in a strange CWL state..."
-        )
+    await updateWarInfo(1)
+    await sendCurrentWar(1, message)
   if message.content.startswith('!timeleft'):
-      await updateWarMini()
-      if war:
-          time_remaining = war.end_time.seconds_until / 60
-          minutes = int(time_remaining % 60)
-          hours = int(time_remaining / 60)
-          await message.channel.send(
-              "{0} has {1} hours and {2} minutes remaining in war against {3}.".format(
-                    clan_names[1], hours, minutes, war.opponent.name))
-      else:
-        await message.channel.send(
-          "The war is in a strange CWL state..."
-          )
-
+      await updateWarInfo(1)
+      await sendTimeRemaining(1, message)
+  if message.content.startswith('@currentwar'):
+    await updateWarInfo(2)
+    await sendCurrentWar(2, message)
+  if message.content.startswith('@timeleft'):
+      await updateWarInfo(2)
+      await sendTimeRemaining(2, message)
 
 async def check_war_time():
   await discord_client.wait_until_ready()
@@ -103,7 +58,7 @@ async def check_war_time():
 
 async def time_to_send():
   global war
-  await updateWarMain()
+  await updateWarInfo(0)
   if war:
     time_remaining = war.end_time.seconds_until / 60
     hours = int(time_remaining / 60)
@@ -143,33 +98,48 @@ def get_warning_message():
   embed.set_thumbnail(url='https://cdn.freelogovectors.net/wp-content/uploads/2019/01/clash_of_clans_logo.png')
   return embed
 
-async def updateWarMain():
+async def updateWarInfo(tag):
   global war
   try:
-    war = await coc_client.get_current_war(clan_tags[0])
+    war = await coc_client.get_current_war(clan_tags[tag])
   except coc.PrivateWarLog:
     #CLAN IS NOT IN CWL
     print("Clan was private log")
   if not war:
-      war = await coc_client.get_current_war(clan_tags[0], cwl_round=coc.WarRound.current_preparation)
+      war = await coc_client.get_current_war(clan_tags[tag], cwl_round=coc.WarRound.current_preparation)
   if war.league_group and len(war.league_group.rounds) == 7:
-    war = await coc_client.get_current_war(clan_tags[0], cwl_round=coc.WarRound.current_preparation )
+    war = await coc_client.get_current_war(clan_tags[tag], cwl_round=coc.WarRound.current_preparation )
 
-async def updateWarMini():
+async def sendTimeRemaining(tag, message):
   global war
-  try:
-    war = await coc_client.get_current_war(clan_tags[1])
-  except coc.PrivateWarLog:
-    #CLAN IS NOT IN CWL
-    print("Clan was private log")
-  if not war:
-      war = await coc_client.get_current_war(clan_tags[1], cwl_round=coc.WarRound.current_preparation)
-  if war.league_group and len(war.league_group.rounds) == 7:
-    war = await coc_client.get_current_war(clan_tags[1], cwl_round=coc.WarRound.current_preparation )
-    
+  if war:
+    time_remaining = war.end_time.seconds_until / 60
+    minutes = int(time_remaining % 60)
+    hours = int(time_remaining / 60)
+    await message.channel.send("{0} has {1} hours and {2} minutes remaining in war against {3}.".format(
+      clan_names[tag], hours, minutes, war.opponent.name))
+  else:
+    await message.channel.send(
+    "The war is in a strange CWL state...")
 
-
-    
+async def sendCurrentWar(tag, message):
+  global war
+  if war:
+    name = war.opponent.name
+    used = 0
+    attacks = ''
+    for attack in war.attacks:
+      if attack.attacker.clan.name == clan_names[tag]:
+        used += 1
+      if war.is_cwl:
+        attacks = str(used) + '/' + str(war.team_size)
+      else :
+        attacks = str(used) +'/' + str(war.team_size * 2)
+    await message.channel.send('{0}\'s current war is against {1}. We have used {2} attacks and are currently {3}.'.format(clan_names[tag], name, attacks, war.status))
+  else :
+    await message.channel.send(
+    "The war is in a strange CWL state..."
+        )
 
 
 
