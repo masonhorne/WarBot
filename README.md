@@ -24,6 +24,10 @@ Currently supports 2 different commands for each clan!
 - [x] (!/$/@) currentwar returns information about the current war taking place
 - [x] Receive a notification 4 hours before the end of war containing who has remaining attacks
 
+## Hosting
+
+- [x] Previously the bot was hosted through Repl.it. This was done by creating a Flask web server and using Uptime Robot to ping the server every hour.
+- [x] Currently the bot is being hosted on a Raspberry Pi 4. Which is set to launch the script on boot and await internet connection before connecting to Discord.
 ## License
 
     Copyright 2021 Mason Horne

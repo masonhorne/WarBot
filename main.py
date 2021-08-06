@@ -2,9 +2,26 @@ import discord
 import coc
 import os
 import asyncio
+import urllib
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
+
+
+def await_internet():
+    host = "http://www.google.com"
+    while True:
+        try:
+            response = urllib.request.urlopen(host)
+            return
+        except Exception:
+            time.sleep(10)
+            pass
+
+
+await_internet()
+
 
 global war
 main_channel = None
@@ -16,7 +33,6 @@ coc_client = coc.login(
     os.getenv('PASS'),
     key_names="Made with coc.py",
     client=coc.EventsClient)
-
 
 @discord_client.event
 async def on_ready():
