@@ -2,6 +2,9 @@ import discord
 import coc
 import os
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
 
 global war
 main_channel = None
