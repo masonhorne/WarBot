@@ -5,6 +5,7 @@ import asyncio
 import urllib
 from dotenv import load_dotenv
 import time
+import json
 
 load_dotenv()
 
@@ -24,6 +25,7 @@ await_internet()
 
 
 global war
+linked_accounts = {}
 main_channel = None
 clan_tags = ['#28LGRG92U', '#2YQ2RLCC8', '#2L2YVRU8V']
 clan_names = ['ToValhalla', 'ValhallaRising', 'Ragnarok']
@@ -38,6 +40,8 @@ coc_client = coc.login(
 async def on_ready():
     print("We have logged in as {0.user}".format(discord_client))
     discord_client.loop.create_task(check_war_time())
+    load_registration()
+
 
 
 @discord_client.event
@@ -45,6 +49,10 @@ async def on_message(message):
     if message.author == discord_client.user:
         return
     global war
+    if message.content.startswith('/registry'):
+        await sendRegistry(message)
+    if message.content.startswith('/register'):
+        register(message.content.split(' ')[1], message.author.id)
     if message.content.startswith('$currentwar'):
         await updateWarInfo(0)
         await sendCurrentWar(0, message)
@@ -81,14 +89,29 @@ async def time_to_send():
     if war:
         time_remaining = war.end_time.seconds_until / 60
         hours = int(time_remaining / 60)
-        if 3 >= hours > 2:
+        if hours == 3:
             return True
     return False
 
 
+def register(username, user_id):
+    linked_accounts[username] = user_id
+    backup_registration()
+
+
+def backup_registration():
+    file = open("accounts.json", 'w')
+    json.dump(linked_accounts, file)
+
+
+def load_registration():
+    global linked_accounts
+    if os.path.exists('accounts.json'):
+        linked_accounts = json.load(open('accounts.json', "r"))
+
+
 def get_warning_message():
     global war
-    total_attacks = 0
     if war.is_cwl:
         total_attacks = war.team_size
     else:
@@ -105,14 +128,19 @@ def get_warning_message():
         member_list.append(member.name)
     for name in member_list:
         attacks_completed = our_attackers.count(name)
+        try:
+            user_id = '<@%s>' % str(linked_accounts[name])
+        except Exception:
+            user_id = ''
         if war.is_cwl:
             if attacks_completed == 0:
-                message += (name + ' - 1 remaining.\n')
+                message += (name + ' - 1 remaining.' + user_id + '\n')
         else:
             if attacks_completed == 0:
-                message += (name + ' - 2 remaining.\n')
+                message += (name + ' - 2 remaining.' + user_id + '\n')
             elif attacks_completed == 1:
-                message += (name + ' - 1 remaining.\n')
+                message += (name + ' - 1 remaining.' + user_id + '\n')
+
     embed = discord.Embed(title="The war is ending soon...", description=message, color=0x607d8b)
     embed.set_thumbnail(url='https://cdn.freelogovectors.net/wp-content/uploads/2019/01/clash_of_clans_logo.png')
     return embed
@@ -144,6 +172,15 @@ async def sendTimeRemaining(tag, message):
             "The war is in a strange CWL state...")
 
 
+async def sendRegistry(user_message):
+    message = "Currently {0} accounts have been registered!\n".format(len(linked_accounts))
+    for name in linked_accounts:
+        message += "{0} - <@{1}>\n".format(name, linked_accounts[name])
+    message += "To register your account type /register <Account Name>.\n"
+    message += "Note that the name MUST be identical to your in game name.\n"
+    await user_message.channel.send(message)
+
+
 async def sendCurrentWar(tag, message):
     global war
     if war:
@@ -165,7 +202,6 @@ async def sendCurrentWar(tag, message):
         await message.channel.send(
             "The war is in a strange CWL state..."
         )
-
 
 
 discord_client.run(os.getenv('TOKEN'))

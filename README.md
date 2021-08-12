@@ -23,6 +23,7 @@ Currently supports 2 different commands for each clan!
 - [x] (!/$/@) timeleft returns the remaining time in the current war
 - [x] (!/$/@) currentwar returns information about the current war taking place
 - [x] Receive a notification 4 hours before the end of war containing who has remaining attacks
+- [x] Ability to register your discord account to your in game name for push notifications through discord
 
 ## Hosting
 
