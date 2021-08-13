@@ -49,6 +49,8 @@ async def on_message(message):
     if message.author == discord_client.user:
         return
     global war
+    if message.content.startswith('/unregister'):
+        unregister(message.content.split(' ')[1])
     if message.content.startswith('/registry'):
         await sendRegistry(message)
     if message.content.startswith('/register'):
@@ -98,6 +100,13 @@ def register(username, user_id):
     linked_accounts[username] = user_id
     backup_registration()
 
+
+def unregister(username):
+    try:
+        linked_accounts.pop(username)
+    except Exception:
+        print("Unregister: Invalid key")
+    backup_registration()
 
 def backup_registration():
     with open("accounts.json", 'w') as file:
