@@ -100,8 +100,8 @@ def register(username, user_id):
 
 
 def backup_registration():
-    file = open("accounts.json", 'w')
-    json.dump(linked_accounts, file)
+    with open("accounts.json", 'w') as file:
+        json.dump(linked_accounts, file)
 
 
 def load_registration():
