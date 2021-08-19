@@ -11,6 +11,11 @@ load_dotenv()
 
 
 def await_internet():
+    """
+    This function continues to check for internet connection until it is
+    available before attempting connection
+    :return: once connection has been achieved
+    """
     host = "http://www.google.com"
     while True:
         try:
@@ -20,10 +25,12 @@ def await_internet():
             time.sleep(10)
             pass
 
+# Wait before connecting to accounts for discord/coc
+
 
 await_internet()
 
-
+# All variables used for managing clan info
 global war
 linked_accounts = {}
 main_channel = None
@@ -36,58 +43,83 @@ coc_client = coc.login(
     key_names="Made with coc.py",
     client=coc.EventsClient)
 
+
 @discord_client.event
 async def on_ready():
+    """
+    This function announces the bot has logged in, begins
+    the background loop to check for sending war info messages,
+    it also loads the registry from file if one exists
+    :return: None
+    """
     print("We have logged in as {0.user}".format(discord_client))
     discord_client.loop.create_task(check_war_time())
     load_registration()
 
 
-
 @discord_client.event
 async def on_message(message):
+    """
+    This function handles the commands users enter
+    :param message: message object that was sent by user
+    :return: None
+    """
     if message.author == discord_client.user:
         return
     global war
+    # Commands dealing w/ registry
     if message.content.startswith('/unregister'):
         unregister(message.content.split(' ')[1])
     if message.content.startswith('/registry'):
-        await sendRegistry(message)
+        await send_registry(message)
     if message.content.startswith('/register'):
         register(message.content.split(' ')[1], message.author.id)
+    # Commands dealing with ToValhalla
     if message.content.startswith('$currentwar'):
-        await updateWarInfo(0)
-        await sendCurrentWar(0, message)
+        await update_war_info(0)
+        await send_current_war(0, message)
     if message.content.startswith('$timeleft'):
-        await updateWarInfo(0)
-        await sendTimeRemaining(0, message)
+        await update_war_info(0)
+        await send_time_remaining(0, message)
+    # Commands dealing with ValhallaRising
     if message.content.startswith('!currentwar'):
-        await updateWarInfo(1)
-        await sendCurrentWar(1, message)
+        await update_war_info(1)
+        await send_current_war(1, message)
     if message.content.startswith('!timeleft'):
-        await updateWarInfo(1)
-        await sendTimeRemaining(1, message)
+        await update_war_info(1)
+        await send_time_remaining(1, message)
+    # Commands dealing with Ragnarok
     if message.content.startswith('@currentwar'):
-        await updateWarInfo(2)
-        await sendCurrentWar(2, message)
+        await update_war_info(2)
+        await send_current_war(2, message)
     if message.content.startswith('@timeleft'):
-        await updateWarInfo(2)
-        await sendTimeRemaining(2, message)
+        await update_war_info(2)
+        await send_time_remaining(2, message)
 
 
 async def check_war_time():
+    """
+    This function checks every hour if it is time to send the war-info message
+    and sends the message if it is
+    :return: None
+    """
     global main_channel
     await discord_client.wait_until_ready()
     main_channel = discord_client.get_channel(int(os.getenv('CHANNEL')))
     while not discord_client.is_closed():
         if await time_to_send():
             await main_channel.send(embed=get_warning_message())
-        await asyncio.sleep(3600)  # Checks every hour
+        await asyncio.sleep(3600)  # Checks every hour (3600sec)
 
 
 async def time_to_send():
+    """
+    This function checks the time until the war ends and tells if it is time
+    to send the war-info message
+    :return: true if betwen 3-4 hours remaining false otherwise
+    """
     global war
-    await updateWarInfo(0)
+    await update_war_info(0)
     if war:
         time_remaining = war.end_time.seconds_until / 60
         hours = int(time_remaining / 60)
@@ -97,29 +129,56 @@ async def time_to_send():
 
 
 def register(username, user_id):
+    """
+    This registers an account in the system and backs it up to file
+    :param username: username from in game to link
+    :param user_id: discord id that is trying to register the username
+    :return: None
+    """
     linked_accounts[username] = user_id
     backup_registration()
 
 
 def unregister(username):
+    """
+    This removes a given username from the registry if one exists and
+    backs up the updated registry to file
+    :param username: username to be removed from the registry
+    :return: None
+    """
     try:
         linked_accounts.pop(username)
     except Exception:
         print("Unregister: Invalid key")
     backup_registration()
 
+
 def backup_registration():
+    """
+    This function outputs the contents of linked_accounts to a json
+    file to allow for multiple sessions
+    :return: None
+    """
     with open("accounts.json", 'w') as file:
         json.dump(linked_accounts, file)
 
 
 def load_registration():
+    """
+    This loads the registration from file on program start
+    :return: None
+    """
     global linked_accounts
     if os.path.exists('accounts.json'):
         linked_accounts = json.load(open('accounts.json', "r"))
 
 
 def get_warning_message():
+    """
+    This builds the warning message of the remaining attacks and war status tagging
+    discord accounts of usernames that appear and are registered
+    :return: None
+    """
     global war
     if war.is_cwl:
         total_attacks = war.team_size
@@ -131,14 +190,14 @@ def get_warning_message():
         if attack.attacker.clan.name == clan_names[0]:
             our_attackers.append(attack.attacker.name)
             attacks += 1
-    message = 'Our war with ' + war.opponent.name + ' is ending in less than 4 hours...\nWe are currently ' + war.status + ' and have used (' + attacks + '/' + total_attacks +') attacks, the following player have remaining attacks.\n'
+    message = 'Our war with ' + war.opponent.name + ' is ending in less than 4 hours...\nWe are currently ' + war.status + ' and have used (' + str(attacks) + '/' + str(total_attacks) +') attacks, the following player have remaining attacks.\n'
     member_list = []
     for member in war.clan.members:
         member_list.append(member.name)
     for name in member_list:
         attacks_completed = our_attackers.count(name)
         try:
-            user_id = '<@%s>' % str(linked_accounts[name])
+            user_id = '\n<@%s>' % str(linked_accounts[name])
         except Exception:
             user_id = ''
         if war.is_cwl:
@@ -155,7 +214,12 @@ def get_warning_message():
     return embed
 
 
-async def updateWarInfo(tag):
+async def update_war_info(tag):
+    """
+    This changes the war info to a given clans info based on the tag given
+    :param tag: 0 = ToValhalla, 1 = ValhallaRising, 2 = Ragnarok
+    :return: None
+    """
     global war
     try:
         war = await coc_client.get_current_war(clan_tags[tag])
@@ -168,7 +232,13 @@ async def updateWarInfo(tag):
         war = await coc_client.get_current_war(clan_tags[tag], cwl_round=coc.WarRound.current_preparation)
 
 
-async def sendTimeRemaining(tag, message):
+async def send_time_remaining(tag, message):
+    """
+    This sends the time remaining message for a given clan
+    :param tag: tag of clan to display war info from
+    :param message: message that contains the command given
+    :return: None
+    """
     global war
     if war:
         time_remaining = war.end_time.seconds_until / 60
@@ -181,7 +251,12 @@ async def sendTimeRemaining(tag, message):
             "The war is in a strange CWL state...")
 
 
-async def sendRegistry(user_message):
+async def send_registry(user_message):
+    """
+    This sets a message containing the registry to the chat
+    :param user_message: message that contains the command given
+    :return: None
+    """
     message = "Currently {0} accounts have been registered!\n".format(len(linked_accounts))
     for name in linked_accounts:
         message += "{0} - <@{1}>\n".format(name, linked_accounts[name])
@@ -190,7 +265,13 @@ async def sendRegistry(user_message):
     await user_message.channel.send(message)
 
 
-async def sendCurrentWar(tag, message):
+async def send_current_war(tag, message):
+    """
+    This sends the current war info for a given clan
+    :param tag: tag of the clan to display information for
+    :param message: message that the command was given in
+    :return: None
+    """
     global war
     if war:
         name = war.opponent.name
@@ -212,5 +293,5 @@ async def sendCurrentWar(tag, message):
             "The war is in a strange CWL state..."
         )
 
-
+# This starts the discord client
 discord_client.run(os.getenv('TOKEN'))
