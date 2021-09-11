@@ -10,6 +10,10 @@ import json
 load_dotenv()
 
 
+def log(message):
+    with open("log.txt", 'a+') as f:
+        f.write("%s\n" % message)
+
 def await_internet():
     """
     This function continues to check for internet connection until it is
@@ -25,23 +29,32 @@ def await_internet():
             time.sleep(10)
             pass
 
-# Wait before connecting to accounts for discord/coc
+def load_coc_client():
+    global coc_client
+    coc_client = coc.login(
+        os.getenv('EMAIL'),
+        os.getenv('PASS'),
+        key_names="Made with coc.py",
+        client=coc.EventsClient)
 
 
-await_internet()
+def init():
+    await_internet()
+    load_coc_client()
 
-# All variables used for managing clan info
+# Wait before connecting to account for coc
+
+
+init()
+
+# All variables used for managing clan info and discord bot
 global war
+global coc_client
 linked_accounts = {}
 main_channel = None
 clan_tags = ['#28LGRG92U', '#2YQ2RLCC8', '#2L2YVRU8V']
 clan_names = ['ToValhalla', 'ValhallaRising', 'Ragnarok']
 discord_client = discord.Client()
-coc_client = coc.login(
-    os.getenv('EMAIL'),
-    os.getenv('PASS'),
-    key_names="Made with coc.py",
-    client=coc.EventsClient)
 
 
 @discord_client.event
@@ -149,7 +162,7 @@ def unregister(username):
     try:
         linked_accounts.pop(username)
     except Exception:
-        print("Unregister: Invalid key")
+        log("Unregister: Invalid key (%s)" % username)
     backup_registration()
 
 
@@ -224,8 +237,13 @@ async def update_war_info(tag):
     try:
         war = await coc_client.get_current_war(clan_tags[tag])
     except coc.PrivateWarLog:
-        # CLAN IS NOT IN CWL
-        print("Clan was private log")
+        log("Clan was private log")
+    except Exception as exception:
+        log(type(exception).__name__)
+        init()
+        war = None
+        return
+
     if not war:
         war = await coc_client.get_current_war(clan_tags[tag], cwl_round=coc.WarRound.current_preparation)
     if war.league_group and len(war.league_group.rounds) == 7:
