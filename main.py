@@ -236,8 +236,12 @@ async def update_war_info(tag):
     global war
     try:
         war = await coc_client.get_current_war(clan_tags[tag])
-    except coc.PrivateWarLog:
-        log("Clan was private log")
+    except coc.PrivateWarLog as exception:
+        log("Clan has private war log")
+        log(type(exception).__name__)
+        init()
+        war = None
+        return
     except Exception as exception:
         log(type(exception).__name__)
         init()
