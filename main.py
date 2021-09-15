@@ -6,13 +6,24 @@ import urllib
 from dotenv import load_dotenv
 import time
 import json
+import subprocess
+from datetime import datetime
 
 load_dotenv()
 
 
 def log(message):
+    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
     with open("log.txt", 'a+') as f:
-        f.write("%s\n" % message)
+        f.write("%s:\t%s\n" % (date_time, message))
+
+
+def create_new_script(program, exit_code=0):
+    # Start the new script
+    subprocess.Popen(program)
+    # Now close this script
+    sys.exit(exit_code)
+
 
 def await_internet():
     """
@@ -28,6 +39,7 @@ def await_internet():
         except Exception:
             time.sleep(10)
             pass
+
 
 def load_coc_client():
     global coc_client
@@ -50,6 +62,7 @@ init()
 # All variables used for managing clan info and discord bot
 global war
 global coc_client
+script_path = "/home/pi/WarBot/main.py"
 linked_accounts = {}
 main_channel = None
 clan_tags = ['#28LGRG92U', '#2YQ2RLCC8', '#2L2YVRU8V']
@@ -162,7 +175,7 @@ def unregister(username):
     try:
         linked_accounts.pop(username)
     except Exception:
-        log("Unregister: Invalid key (%s)" % username)
+        log("unregister invalid key (%s)" % username)
     backup_registration()
 
 
@@ -237,8 +250,8 @@ async def update_war_info(tag):
     try:
         war = await coc_client.get_current_war(clan_tags[tag])
     except coc.PrivateWarLog as exception:
-        cmd = 'reboot'
-        os.system(cmd)
+        log("resetting script")
+        create_new_script(["python3", script_path])
     except Exception as exception:
         log(type(exception).__name__)
         init()
