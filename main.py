@@ -13,6 +13,7 @@ load_dotenv()
 
 
 def log(message):
+    now = datetime.now()
     date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
     with open("log.txt", 'a+') as f:
         f.write("%s:\t%s\n" % (date_time, message))
