@@ -72,6 +72,7 @@ async def on_ready():
     it also loads the registry from file if one exists
     :return: None
     """
+    log("We have logged in as {0.user}".format(discord_client))
     print("We have logged in as {0.user}".format(discord_client))
     discord_client.loop.create_task(check_war_time())
     load_registration()
@@ -247,8 +248,6 @@ async def update_war_info(tag):
         log("Private War Log")
     except Exception as exception:
         log(type(exception).__name__)
-        init()
-        war = None
         return
 
     if not war:
