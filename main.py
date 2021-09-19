@@ -18,13 +18,6 @@ def log(message):
         f.write("%s:\t%s\n" % (date_time, message))
 
 
-def create_new_script(program, exit_code=0):
-    # Start the new script
-    subprocess.Popen(program)
-    # Now close this script
-    sys.exit(exit_code)
-
-
 def await_internet():
     """
     This function continues to check for internet connection until it is
@@ -250,8 +243,7 @@ async def update_war_info(tag):
     try:
         war = await coc_client.get_current_war(clan_tags[tag])
     except coc.PrivateWarLog as exception:
-        log("resetting script")
-        create_new_script(["python3", script_path])
+        log("Private War Log")
     except Exception as exception:
         log(type(exception).__name__)
         init()
