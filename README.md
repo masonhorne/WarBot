@@ -14,7 +14,14 @@ Here's an example of the commands and features:
 
 ![](https://i.imgur.com/MgBFUJW.png)
 
+## Installation
 
+1. For package installation run this command.
+> pip install -r requirements.txt
+
+2. Update the clan tags to your own clans tags (unless you want to watch mine).
+
+3. Run the script, current code will execute on Raspberry Pi but with slight modifications can be hosted on Repl.it (see below).
 
 
 ## Notes

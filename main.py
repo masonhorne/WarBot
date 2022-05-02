@@ -6,13 +6,17 @@ import urllib
 from dotenv import load_dotenv
 import time
 import json
-import subprocess
 from datetime import datetime
 
 load_dotenv()
 
 
 def log(message):
+    """
+    This logs errors to a file with the date and time appended
+    :param message: message to log to file
+    :return: None
+    """
     now = datetime.now()
     date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
     with open("log.txt", 'a+') as f:
@@ -36,6 +40,10 @@ def await_internet():
 
 
 def load_coc_client():
+    """
+    This loads the coc client with given credentials
+    :return: None
+    """
     global coc_client
     coc_client = coc.login(
         os.getenv('EMAIL'),
@@ -45,10 +53,13 @@ def load_coc_client():
 
 
 def init():
+    """
+    This waits for internet connection to be established then connects to the
+    clash of clans client
+    :return: None
+    """
     await_internet()
     load_coc_client()
-
-# Wait before connecting to account for coc
 
 
 init()
@@ -89,12 +100,12 @@ async def on_message(message):
         return
     global war
     # Commands dealing w/ registry
-    if message.content.startswith('/unregister'):
-        unregister(message.content.split(' ')[1])
-    if message.content.startswith('/registry'):
+    if message.content.startswith('$unregister'):
+        await unregister(message.content.split(' ')[1], message)
+    if message.content.startswith('$registry'):
         await send_registry(message)
-    if message.content.startswith('/register'):
-        register(message.content.split(' ')[1], message.author.id)
+    if message.content.startswith('$register'):
+        await register(message.content.split(' ')[1], message.author.id, message)
     # Commands dealing with ToValhalla
     if message.content.startswith('$currentwar'):
         await update_war_info(0)
@@ -141,7 +152,7 @@ async def time_to_send():
     """
     global war
     await update_war_info(0)
-    if war:
+    if war and war.state != 'notInWar':
         time_remaining = war.end_time.seconds_until / 60
         hours = int(time_remaining / 60)
         if hours == 3:
@@ -149,7 +160,7 @@ async def time_to_send():
     return False
 
 
-def register(username, user_id):
+async def register(username, user_id, message):
     """
     This registers an account in the system and backs it up to file
     :param username: username from in game to link
@@ -158,9 +169,10 @@ def register(username, user_id):
     """
     linked_accounts[username] = user_id
     backup_registration()
+    await message.channel.send("Sucessfully registered %s to <@%s>" % (username, user_id))
 
 
-def unregister(username):
+async def unregister(username, message):
     """
     This removes a given username from the registry if one exists and
     backs up the updated registry to file
@@ -172,6 +184,7 @@ def unregister(username):
     except Exception:
         log("unregister invalid key (%s)" % username)
     backup_registration()
+    await message.channel.send("Sucessfully unregistered %s" % username)
 
 
 def backup_registration():
