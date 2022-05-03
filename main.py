@@ -319,23 +319,23 @@ async def send_current_war(tag, message):
     """
     global war
     if war:
-
         name = war.opponent.name
         if war.state == 'preparation':
             await message.channel.send(
                 '{0}\'s current war is against {1}. We are currently in the preparation phase.'.format(
                     clan_names[tag],
                     name))
-        used = 0
-        attacks = ''
-        for attack in war.attacks:
-            if attack.attacker.clan.name == clan_names[tag]:
-                used += 1
-            if war.is_cwl:
-                attacks = str(used) + '/' + str(war.team_size)
-            else:
-                attacks = str(used) + '/' + str(war.team_size * 2)
-        await message.channel.send(
+        else:
+            used = 0
+            attacks = ''
+            for attack in war.attacks:
+                if attack.attacker.clan.name == clan_names[tag]:
+                    used += 1
+                if war.is_cwl:
+                    attacks = str(used) + '/' + str(war.team_size)
+                else:
+                    attacks = str(used) + '/' + str(war.team_size * 2)
+            await message.channel.send(
             '{0}\'s current war is against {1}. We have used {2} attacks and are currently {3}.'.format(clan_names[tag],
                                                                                                         name, attacks,
                                                                                                         war.status))
