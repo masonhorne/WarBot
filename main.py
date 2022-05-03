@@ -67,6 +67,7 @@ init()
 # All variables used for managing clan info and discord bot
 global war
 global coc_client
+err_message = 'The war is in an unpredicted state...'
 script_path = "/home/pi/WarBot/main.py"
 linked_accounts = {}
 main_channel = None
@@ -254,6 +255,7 @@ async def update_war_info(tag):
     :param tag: 0 = ToValhalla, 1 = ValhallaRising, 2 = Ragnarok
     :return: None
     """
+    log('Updated war info')
     global war
     war = None
     try:
@@ -270,6 +272,8 @@ async def update_war_info(tag):
         war = await coc_client.get_current_war(clan_tags[tag], cwl_round=coc.WarRound.current_preparation)
     if war.opponent.name is None:
         war = None
+    if war is None:
+        log('No current war to update to for %s' % clan_names[tag])
 
 
 async def send_time_remaining(tag, message):
@@ -287,8 +291,9 @@ async def send_time_remaining(tag, message):
         await message.channel.send("{0} has {1} hours and {2} minutes remaining in war against {3}.".format(
             clan_names[tag], hours, minutes, war.opponent.name))
     else:
+        log("Invalid war information requested")
         await message.channel.send(
-            "The war is in a strange CWL state...")
+            err_message)
 
 
 async def send_registry(user_message):
@@ -329,8 +334,9 @@ async def send_current_war(tag, message):
                                                                                                         name, attacks,
                                                                                                         war.status))
     else:
+        log("Invalid war information requested")
         await message.channel.send(
-            "The war is in a strange CWL state..."
+            err_message
         )
 
 # This starts the discord client
