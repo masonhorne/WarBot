@@ -297,7 +297,7 @@ async def send_registry(user_message):
     message = "Currently {0} accounts have been registered!\n".format(len(linked_accounts))
     for name in linked_accounts:
         message += "{0} - <@{1}>\n".format(name, linked_accounts[name])
-    message += "To register your account type /register <Account Name>.\n"
+    message += "To register your account type $register <Account Name>.\n"
     message += "Note that the name MUST be identical to your in game name.\n"
     await user_message.channel.send(message)
 
