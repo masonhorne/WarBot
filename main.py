@@ -255,6 +255,7 @@ async def update_war_info(tag):
     :return: None
     """
     global war
+    war = None
     try:
         war = await coc_client.get_current_war(clan_tags[tag])
     except coc.PrivateWarLog as exception:
@@ -267,6 +268,8 @@ async def update_war_info(tag):
         war = await coc_client.get_current_war(clan_tags[tag], cwl_round=coc.WarRound.current_preparation)
     if war.league_group and len(war.league_group.rounds) == 7:
         war = await coc_client.get_current_war(clan_tags[tag], cwl_round=coc.WarRound.current_preparation)
+    if war.opponent.name is None:
+        war = None
 
 
 async def send_time_remaining(tag, message):
