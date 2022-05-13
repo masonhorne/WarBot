@@ -153,7 +153,7 @@ async def time_to_send():
     """
     global war
     await update_war_info(0)
-    if war and war.state != 'notInWar':
+    if war:
         time_remaining = war.end_time.seconds_until / 60
         hours = int(time_remaining / 60)
         if hours == 3:
