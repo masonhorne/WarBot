@@ -153,9 +153,11 @@ async def time_to_send():
     """
     global war
     await update_war_info(0)
+    log("Time to Send Check")
     if war:
         time_remaining = war.end_time.seconds_until / 60
         hours = int(time_remaining / 60)
+        log("Time to Send Value: %d" % hours)
         if hours == 3:
             return True
     return False
@@ -183,7 +185,7 @@ async def unregister(username, message):
     try:
         linked_accounts.pop(username)
     except Exception:
-        log("unregister invalid key (%s)" % username)
+        log("Unregister invalid key (%s)" % username)
     backup_registration()
     await message.channel.send("Sucessfully unregistered %s" % username)
 
