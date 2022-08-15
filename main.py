@@ -141,6 +141,7 @@ async def check_war_time():
     main_channel = discord_client.get_channel(int(os.getenv('CHANNEL')))
     while not discord_client.is_closed():
         if await time_to_send():
+            log("Sending war ending soon message")
             await main_channel.send(embed=get_warning_message())
         await asyncio.sleep(3600)  # Checks every hour (3600sec)
 
@@ -158,8 +159,8 @@ async def time_to_send():
         time_remaining = war.end_time.seconds_until / 60
         hours = int(time_remaining / 60)
         log("Time to Send Value: %d" % hours)
-        if hours == 3:
-            return True
+        log("Evaluation of time_to_send: " + str(hours == 3))
+        return hours == 3
     return False
 
 
