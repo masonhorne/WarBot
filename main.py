@@ -143,6 +143,7 @@ async def check_war_time():
         if await time_to_send():
             log("Sending war ending soon message")
             await main_channel.send(embed=get_warning_message())
+            log("Message sent sleeping now")
         await asyncio.sleep(3600)  # Checks every hour (3600sec)
 
 
@@ -217,6 +218,7 @@ def get_warning_message():
     discord accounts of usernames that appear and are registered
     :return: None
     """
+    log("Retrieving war end warning message")
     global war
     if war.is_cwl:
         total_attacks = war.team_size
@@ -246,9 +248,11 @@ def get_warning_message():
                 message += (name + ' - 2 remaining.' + user_id + '\n')
             elif attacks_completed == 1:
                 message += (name + ' - 1 remaining.' + user_id + '\n')
-
+    log("Adding message to embed")
     embed = discord.Embed(title="The war is ending soon...", description=message, color=0x607d8b)
-    embed.set_thumbnail(url='https://cdn.freelogovectors.net/wp-content/uploads/2019/01/clash_of_clans_logo.png')
+    log("Adding image to embed")
+    embed.set_thumbnail(url='https://clashofclans.com/uploaded-images-blog/_134x63_crop_center-center_90/1779622587_1641980234.png?mtime=20220112093714')
+    log("Returning embed")
     return embed
 
 
