@@ -1,6 +1,6 @@
 import coc
 import discord
-import utility
+from src import utility
 import asyncio
 
 
@@ -45,7 +45,6 @@ class WarBot(discord.Client):
             self.__coc_pass,
             key_names="Made with coc.py",
             client=coc.EventsClient)
-        print("SUCCESS")
 
     async def update_war_info(self, tag):
         """

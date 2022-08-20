@@ -1,7 +1,6 @@
 import dotenv
 import os
-import warbot
-
+from src import warbot
 
 # Load API keys from environment variables
 dotenv.load_dotenv()

@@ -4,3 +4,4 @@ log.txt
 env
 .idea
 test.py
+src/__pycache__
