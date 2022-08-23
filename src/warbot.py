@@ -158,7 +158,7 @@ class WarBot(discord.Client):
             # If it is time to send, gather the message and send it
             if await self.time_to_send():
                 utility.log("Sending war ending soon message")
-                await main_channel.send(embed=get_warning_message())
+                await self.__main_channel.send(embed=self.get_warning_message())
             # Sleep for an hour before checking again
             await asyncio.sleep(3600)  # Checks every hour (3600sec)
 
