@@ -31,11 +31,13 @@ class WarBot(discord.Client):
         # Set the email and password for the COC Client as class variables
         self.__coc_email = coc_email
         self.__coc_pass = coc_pass
+        # Store the channel id as a variable
+        self.__channel_id = channel_id
         # Load linked accounts and main channel as class variables
         self.__linked_accounts = utility.load_registration()
-        self.__main_channel = self.get_channel(int(channel_id))
-        # Set war as NULL by default
+        # Set war and main channel as NULL by default
         self.__war = None
+        self.__main_channel = None
         # Await internet connection on host device
         utility.await_internet()
         # Log start message and initialize the clash of clans client
@@ -278,6 +280,8 @@ class WarBot(discord.Client):
         """
         # Log that successful login has occurred
         utility.log("We have logged in as {0.user}".format(self))
+        # Store the main channel as a variable
+        self.__main_channel = self.get_channel(int(self.__channel_id))
         # Create event loop for checking if war is ending soon
         self.loop.create_task(self.check_war_time())
 
