@@ -113,7 +113,7 @@ class WarBot(discord.Client):
         attacks = 0
         # Loop through all attacks counting our attacks and adding attackers to list
         for attack in self.__war.attacks:
-            if attack.attacker.clan.name == clan_names[0]:
+            if attack.attacker.clan.name == self.__TV__:
                 our_attackers.append(attack.attacker.name)
                 attacks += 1
         # Initialize message with default statistics at the top
