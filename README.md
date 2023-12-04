@@ -1,53 +1,43 @@
-# Clash of Clans Bot - *WarBot*
+# Clash of Clans Bot - _WarBot_
 
-**WarBot** is a Clash of Clans Discord bot that alerts users of attacks remaining in war
-
-By: **Mason Horne**
-
-## Images
-
-Here's an example of the commands and features:
-
-![](https://i.imgur.com/1QT8ySg.png)
-
-![](https://i.imgur.com/7vOUT9M.png)
-
-![](https://i.imgur.com/MgBFUJW.png)
+**WarBot** is a Clash of Clans Discord bot that alerts users of remaining attacks in war.
 
 ## Installation
 
 1. For package installation run this command.
-> pip install -r requirements.txt
 
-2. Update the clan tags to your own clans tags (unless you want to watch mine).
+   `pip install -r requirements.txt`
 
-3. Run the script, current code will execute on Raspberry Pi but with slight modifications can be hosted on Repl.it (see below).
+2. Create a `.env` file in the root directory with the following variables:
 
+- EMAIL: Email to authenticate with clash of clans API
+- PASS: Password for authenticating with clash of clans API
+- TOKEN: Token for discord bot
+- ATLAS_URI: URI for mongodb atlas connection
+- DB_NAME: Name of collection to access in mongo atlas
 
-## Notes
+## Supported Commands
 
-Currently supports 2 different commands for each clan!
-- [x] (!/$/@) timeleft returns the remaining time in the current war
-- [x] (!/$/@) currentwar returns information about the current war taking place
-- [x] Receive a notification 4 hours before the end of war containing who has remaining attacks
-- [x] Ability to register your discord account to your in game name for push notifications through discord
+### General Commands
 
-## Hosting
+- /register <clan_tag> <clan_symbol>
+  - Registers a clan based on the provided clan tag for the current discord server and sets the clans command prefix to the provided symbol.
+- /serverinfo
+  - Lists all registered clans and users for the current discord server.
+- /registry
+  - Sends a list of all linked accounts for this discord server.
+- /link <account_name>
+  - Links a clash of clans account with the provided in game name with the current discord account.
+- /unlink <account_name>
+  - Unlinks a clash of clans account with the provided in game name from the current discord account.
 
-- [x] Previously the bot was hosted through Repl.it. This was done by creating a Flask web server and using Uptime Robot to ping the server every hour.
-- [x] Currently the bot is being hosted on a Raspberry Pi 4. Which is set to launch the script on boot and await internet connection before connecting to Discord.
-## License
+### Clan Specific Commands
 
-    Copyright 2021 Mason Horne
+> These use ? to denote the registered clan symbol.
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+- ?currentwar
+  - Sends information about the clans currently active war.
+- ?timeleft
+  - Sends the time remaining in the clans active war.
+- ?configure
+  - Registers the current channel as the announcement channel for the clan.
