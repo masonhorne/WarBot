@@ -2,6 +2,7 @@ import os
 import coc
 import discord
 import asyncio
+import shlex
 from src import database, utility
 
 
@@ -98,12 +99,12 @@ class WarBot(discord.Client):
 
     async def link(self, message, server):
         # Handle invalid uses
-        arguments = message.content.split(' ')
+        arguments = shlex.split(message.content)
         if len(arguments) != 2:
-            await self.send_embed(message, "WarBot Link", "Incorrect Usage: /link <account name>")
+            await self.send_embed(message, "WarBot Link", "Incorrect Usage: /link <account name>\nNote that if the name contains spaces it will need to be enclosed in quotes.")
             return
         # Parse out needed information to link
-        username = arguments[1]
+        username = arguments[1].replace('"', '')
         user_id = message.author.id
         # Add user to the servers linked accounts 
         server.users += [database.User(user_id, username)]
@@ -113,13 +114,13 @@ class WarBot(discord.Client):
         await self.send_embed(message, "WarBot Link", "Sucessfully registered %s to <@%s>" % (username, user_id))
 
     async def unlink(self, message, server):
-        arguments = message.content.split(' ')
+        arguments = shlex.split(message.content)
         # Handle invalid uses
         if len(arguments) != 2:
-            await self.send_embed(message, "WarBot Unlink", "Incorrect Usage: /unlink <account name>")
+            await self.send_embed(message, "WarBot Unlink", "Incorrect Usage: /unlink <account name>\nNote that if the name contains spaces it will need to be enclosed in quotes.")
             return
         # Parse out needed information to unlink
-        username = arguments[1]
+        username = arguments[1].replace('"', '')
         deleted_user = utility.delete(server.users, lambda x: x.account_name == username and x.user_id == message.author.id)
         # Handle if no user existed to unlink
         if not deleted_user:
@@ -134,6 +135,7 @@ class WarBot(discord.Client):
     async def get_war(self, clan):
         # Try to gather war information logging if errors occur
         try:
+            # war = asyncio.run(self.coc_client.get_current_war(clan.clan_tag))
             war = await self.coc_client.get_current_war(clan.clan_tag)
         except coc.PrivateWarLog as exception:
             utility.log("Private War Log")
@@ -220,11 +222,14 @@ class WarBot(discord.Client):
         elif message.content.startswith('/register'):
             await self.register_clan(message)
             return
-        
-        # Ignore messages that don't start with a symbol
-        if len(message.content) <= 0 or message.content[0].isalpha() or message.content[0].isdigit():
+          
+        potential_command = message.content[1:]
+        if ' ' in potential_command: potential_command = potential_command.split(' ')[0]
+        valid_commands = ['link', 'unlink', 'registry', 'currentwar', 'timeleft', 'configure']
+        # Ignore messages that aren't commands
+        if len(message.content) <= 0 or message.content[0].isalpha() or message.content[0].isdigit() or potential_command not in valid_commands:
             return
-        
+
         # Read the server for handling commands
         server = self.database.read_server(message.guild.id)
         # If no server exists, alert user to register a clan
@@ -247,7 +252,6 @@ class WarBot(discord.Client):
                 # Error case for requesting an command for an unregistered clan
                 await self.send_embed(message, "WarBot Registration", "There is no clan registered with WarBot using this symbol on this server.\nRegister a clan first with /register <clan tag> <command symbol>.")
             return
-
 
         if message.content[1:].startswith('currentwar'):
             await self.send_current_war(message, clan)
@@ -294,7 +298,7 @@ class WarBot(discord.Client):
             # Count total used
             attacks_completed = our_attackers.count(name)
             # Set user id if present in registration
-            user = utitlity.find(server.users, lambda x: x.account_name == name)
+            user = utility.find(server.users, lambda x: x.account_name == name)
             if user is None: user_id = ''
             else: user_id = '<@%s>' % user.user_id
             # If CWL only 1 attack otherwise 2 so output appropriately
@@ -332,4 +336,4 @@ class WarBot(discord.Client):
         utility.log("Successfully logged in as %s" % self.user)
         print("Successfully logged in as %s" % self.user)
         # Create event loop for checking if war is ending soon
-        self.loop.create_task(self.poll_war_announcements())
+        await self.loop.create_task(self.poll_war_announcements())

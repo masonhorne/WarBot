@@ -1,8 +1,8 @@
-aiohttp==3.7.4.post0
+aiohttp==3.9.1
 aiosignal==1.3.1
-async-timeout==3.0.1
+async-timeout==4.0.3
 attrs==23.1.0
-coc.py==2.0.0
+coc.py==3.2.0
 discord.py==2.3.2
 dnspython==2.4.2
 frozenlist==1.4.0
