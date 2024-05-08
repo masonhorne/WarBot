@@ -143,21 +143,6 @@ class WarBot(discord.Client):
         except Exception as exception:
             utility.log(type(exception).__name__)
             return None
-        # TODO: IF this is no longer required from coc.py update it can be removed
-        # # Check for special cases with CWL which cause wars to not be caught
-        # if not war:
-        #     war = await self.coc_client.get_current_war(clan.clan_tag, cwl_round=coc.WarRound.current_preparation)
-        # if war.league_group and len(war.league_group.rounds) == 7:
-        #     war = await self.coc_client.get_current_war(clan.clan_tag, cwl_round=coc.WarRound.current_preparation)
-        # # If opponent name is NULL set war to NULL
-        # if war.opponent.name is None:
-        #     war = None
-        # # If war resulting in None value, log that no war was found for the clan
-        # if war is None:
-        #     utility.log('No current war to update to for %s' % clan.clan_tag)
-        # else:
-        #     # Log that the war information was updated
-        #     utility.log('Updated war info for %s' % clan.clan_tag)
         return war
 
     async def send_time_remaining(self, message, clan):
