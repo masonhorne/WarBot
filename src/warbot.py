@@ -250,7 +250,7 @@ class WarBot(discord.Client):
         # Update the war information to the proper clan
         war = await self.get_war(clan)
         # If war is going on, check if it is ending within 3-4 hours and return true if so
-        if war:
+        if war is not None:
             time_remaining = war.end_time.seconds_until / 60
             hours = int(time_remaining / 60)
             return hours == 3
